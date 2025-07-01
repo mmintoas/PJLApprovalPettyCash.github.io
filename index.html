@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Approval Petty Cash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .status-pending {
+            background-color: #f59e0b;
+        }
+        .status-approved {
+            background-color: #10b981;
+        }
+        .status-rejected {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="gradient-bg text-white py-4 px-6">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Sistem Approval Petty Cash</h1>
+                <div id="userInfo" class="flex items-center space-x-2">
+                    <span id="currentUser" class="font-medium"></span>
+                    <button onclick="logout()" class="bg-white text-indigo-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-indigo-50">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto py-8 px-4">
+            <!-- Login Section -->
+            <section id="loginSection" class="max-w-md mx-auto bg-white rounded-lg card-shadow overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                            <input type="text" id="username" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="password" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button onclick="login()" class="w-full gradient-bg text-white py-2 px-4 rounded-md hover:opacity-90 transition-opacity">
+                            Masuk
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="hidden">
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Alur Approval</h2>
+                    <div class="flex justify-between items-center">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+                                <span class="text-indigo-600 font-bold">1</span>
+                            </div>
+                            <span class="text-sm font-medium">Pembuat</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200"></div>
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+                                <span class="text-indigo-600 font-bold">2</span>
+                            </div>
+                            <span class="text-sm font-medium">Pemeriksa</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200"></div>
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+                                <span class="text-indigo-600 font-bold">3</span>
+                            </div>
+                            <span class="text-sm font-medium">Approver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Form Pengajuan -->
+                    <div id="requestForm" class="bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Form Pengajuan Petty Cash</h3>
+                        <form id="pettyCashForm" class="space-y-4">
+                            <div>
+                                <label for="projectName" class="block text-sm font-medium text-gray-700">Nama Project</label>
+                                <input type="text" id="projectName" required class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="amount" class="block text-sm font-medium text-gray-700">Jumlah (Rp)</label>
+                                <input type="number" id="amount" required class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="purpose" class="block text-sm font-medium text-gray-700">Tujuan Penggunaan</label>
+                                <textarea id="purpose" rows="3" required class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="resetForm()" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition">
+                                    Reset
+                                </button>
+                                <button type="submit" class="gradient-bg text-white py-2 px-4 rounded-md hover:opacity-90 transition-opacity">
+                                    Ajukan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Daftar Pengajuan -->
+                    <div class="bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Pengajuan</h3>
+                        <div class="space-y-4" id="requestsList">
+                            <!-- Daftar pengajuan akan muncul di sini -->
+                            <p class="text-gray-500 text-center py-4">Belum ada pengajuan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Section -->
+                <div id="approvalSection" class="mt-8 bg-white rounded-lg card-shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Approval yang Menunggu</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pembuat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="approvalList">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada pengajuan yang menunggu approval</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4 px-6">
+            <div class="container mx-auto text-center text-sm">
+                Sistem Approval Petty Cash &copy; 2023
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Database pengguna
+        const users = [
+            { 
+                username: 'pembuat1', 
+                password: 'pembuat123', 
+                role: 'creator',
+                name: 'Agus Setiawan'
+            },
+            { 
+                username: 'pemeriksa1', 
+                password: 'pemeriksa123', 
+                role: 'reviewer',
+                name: 'Dewi Puspita'
+            },
+            { 
+                username: 'approver1', 
+                password: 'approver123', 
+                role: 'approver',
+                name: 'Budi Santoso'
+            },
+            { 
+                username: 'admin', 
+                password: 'admin123', 
+                role: 'admin',
+                name: 'Admin Sistem'
+            }
+        ];
+
+        // Database pengajuan petty cash
+        let pettyCashRequests = [
+            {
+                id: 1,
+                projectName: 'Project Website Baru',
+                amount: 5000000,
+                purpose: 'Biaya pembelian domain dan hosting',
+                createdBy: 'pembuat1',
+                createdAt: new Date('2023-05-10'),
+                reviewer: null,
+                reviewedAt: null,
+                approver: null,
+                approvedAt: null,
+                status: 'pending' // pending, reviewed, approved, rejected
+            }
+        ];
+
+        // Variabel global untuk user yang sedang login
+        let currentUser = null;
+
+        // Fungsi untuk login
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                document.getElementById('currentUser').textContent = currentUser.name;
+                document.getElementById('userInfo').classList.remove('hidden');
+
+                // Sembunyikan/munculkan bagian sesuai role
+                setupDashboardByRole();
+                renderRequests();
+                renderApprovalList();
+            } else {
+                alert('Username atau password salah');
+            }
+        }
+
+        // Fungsi untuk logout
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        // Fungsi untuk setup dashboard berdasarkan role
+        function setupDashboardByRole() {
+            const requestForm = document.getElementById('requestForm');
+            const approvalSection = document.getElementById('approvalSection');
+
+            if (currentUser.role === 'creator') {
+                requestForm.classList.remove('hidden');
+                approvalSection.classList.add('hidden');
+            } else if (currentUser.role === 'reviewer') {
+                requestForm.classList.add('hidden');
+                approvalSection.classList.remove('hidden');
+            } else if (currentUser.role === 'approver') {
+                requestForm.classList.add('hidden');
+                approvalSection.classList.remove('hidden');
+            } else if (currentUser.role === 'admin') {
+                requestForm.classList.remove('hidden');
+                approvalSection.classList.remove('hidden');
+            }
+        }
+
+        // Fungsi untuk render daftar pengajuan
+        function renderRequests() {
+            const requestsList = document.getElementById('requestsList');
+            
+            // Filter pengajuan yang dibuat oleh user saat ini jika role creator
+            const userRequests = currentUser.role === 'creator' 
+                ? pettyCashRequests.filter(req => req.createdBy === currentUser.username)
+                : pettyCashRequests;
+
+            if (userRequests.length === 0) {
+                requestsList.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada pengajuan</p>';
+                return;
+            }
+
+            requestsList.innerHTML = '';
+
+            userRequests.forEach(request => {
+                const requestElement = document.createElement('div');
+                requestElement.className = 'border-b border-gray-200 pb-4';
+                
+                let statusBadge = '';
+                if (request.status === 'pending') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-pending text-white">Menunggu</span>';
+                } else if (request.status === 'reviewed') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Sudah Dicek</span>';
+                } else if (request.status === 'approved') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-approved text-white">Disetujui</span>';
+                } else if (request.status === 'rejected') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-rejected text-white">Ditolak</span>';
+                }
+
+                const user = users.find(u => u.username === request.createdBy);
+
+                requestElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${request.projectName}</h4>
+                            <p class="text-sm text-gray-500">${new Date(request.createdAt).toLocaleDateString('id-ID')} • Rp${request.amount.toLocaleString('id-ID')}</p>
+                            <p class="text-sm mt-1">${request.purpose.substring(0, 50)}${request.purpose.length > 50 ? '...' : ''}</p>
+                        </div>
+                        <div>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        Dibuat oleh: ${user ? user.name : request.createdBy}
+                    </div>
+                `;
+
+                requestsList.appendChild(requestElement);
+            });
+        }
+
+        // Fungsi untuk render daftar approval
+        function renderApprovalList() {
+            const approvalList = document.getElementById('approvalList');
+
+            // Filter pengajuan yang perlu approval berdasarkan role
+            let waitingApprovals = [];
+            if (currentUser.role === 'reviewer') {
+                waitingApprovals = pettyCashRequests.filter(req => req.status === 'pending');
+            } else if (currentUser.role === 'approver') {
+                waitingApprovals = pettyCashRequests.filter(req => req.status === 'reviewed');
+            } else if (currentUser.role === 'admin') {
+                waitingApprovals = pettyCashRequests;
+            }
+
+            if (waitingApprovals.length === 0) {
+                approvalList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada pengajuan yang menunggu approval</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            approvalList.innerHTML = '';
+
+            waitingApprovals.forEach(request => {
+                const user = users.find(u => u.username === request.createdBy);
+                const reviewer = users.find(u => u.username === request.reviewer);
+                const approver = users.find(u => u.username === request.approver);
+
+                let statusBadge = '';
+                if (request.status === 'pending') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-pending text-white">Menunggu Pemeriksaan</span>';
+                } else if (request.status === 'reviewed') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Menunggu Approval</span>';
+                } else if (request.status === 'approved') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-approved text-white">Disetujui</span>';
+                } else if (request.status === 'rejected') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-rejected text-white">Ditolak</span>';
+                }
+
+                let actionButtons = '';
+                if (currentUser.role === 'reviewer' && request.status === 'pending') {
+                    actionButtons = `
+                        <button onclick="reviewRequest(${request.id}, 'approve')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm font-medium">
+                            Setuju
+                        </button>
+                        <button onclick="reviewRequest(${request.id}, 'reject')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium ml-2">
+                            Tolak
+                        </button>
+                    `;
+                } else if (currentUser.role === 'approver' && request.status === 'reviewed') {
+                    actionButtons = `
+                        <button onclick="approveRequest(${request.id}, 'approve')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm font-medium">
+                            Final Approval
+                        </button>
+                        <button onclick="approveRequest(${request.id}, 'reject')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium ml-2">
+                            Tolak
+                        </button>
+                    `;
+                } else if (currentUser.role === 'admin') {
+                    actionButtons = `<button onclick="deleteRequest(${request.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium">Hapus</button>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${request.projectName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp${request.amount.toLocaleString('id-ID')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user ? user.name : request.createdBy}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${statusBadge}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${actionButtons}
+                    </td>
+                `;
+
+                approvalList.appendChild(tr);
+            });
+        }
+
+        // Fungsi untuk submit form pengajuan
+        document.getElementById('pettyCashForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const projectName = document.getElementById('projectName').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            const purpose = document.getElementById('purpose').value;
+
+            if (!projectName || !amount || !purpose) {
+                alert('Harap lengkapi semua field');
+                return;
+            }
+
+            const newRequest = {
+                id: pettyCashRequests.length > 0 ? Math.max(...pettyCashRequests.map(req => req.id)) + 1 : 1,
+                projectName,
+                amount,
+                purpose,
+                createdBy: currentUser.username,
+                createdAt: new Date(),
+                reviewer: null,
+                reviewedAt: null,
+                approver: null,
+                approvedAt: null,
+                status: 'pending'
+            };
+
+            pettyCashRequests.push(newRequest);
+            resetForm();
+            renderRequests();
+            renderApprovalList();
+
+            alert('Pengajuan petty cash berhasil dibuat');
+        });
+
+        // Fungsi untuk reset form
+        function resetForm() {
+            document.getElementById('pettyCashForm').reset();
+        }
+
+        // Fungsi untuk pemeriksaan oleh reviewer
+        function reviewRequest(id, action) {
+            const request = pettyCashRequests.find(req => req.id === id);
+            
+            if (request) {
+                if (action === 'approve') {
+                    request.status = 'reviewed';
+                    request.reviewer = currentUser.username;
+                    request.reviewedAt = new Date();
+                    alert('Pengajuan telah disetujui untuk lanjut ke approval');
+                } else {
+                    request.status = 'rejected';
+                    request.reviewer = currentUser.username;
+                    request.reviewedAt = new Date();
+                    alert('Pengajuan telah ditolak');
+                }
+                
+                renderRequests();
+                renderApprovalList();
+            }
+        }
+
+        // Fungsi untuk approval oleh approver
+        function approveRequest(id, action) {
+            const request = pettyCashRequests.find(req => req.id === id);
+            
+            if (request) {
+                if (action === 'approve') {
+                    request.status = 'approved';
+                    request.approver = currentUser.username;
+                    request.approvedAt = new Date();
+                    alert('Pengajuan telah disetujui secara final');
+                } else {
+                    request.status = 'rejected';
+                    request.approver = currentUser.username;
+                    request.approvedAt = new Date();
+                    alert('Pengajuan telah ditolak');
+                }
+                
+                renderRequests();
+                renderApprovalList();
+            }
+        }
+
+        // Fungsi untuk hapus pengajuan (admin)
+        function deleteRequest(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')) {
+                pettyCashRequests = pettyCashRequests.filter(req => req.id !== id);
+                renderRequests();
+                renderApprovalList();
+            }
+        }
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userInfo').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
